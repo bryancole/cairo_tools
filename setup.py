@@ -10,7 +10,8 @@ from Cython.Distutils import build_ext
 
 ext_modules = [Extension("cairo_tools", ["cairo_tools.pyx"],
                     include_dirs=["/usr/include/pycairo",
-                                "/usr/include/cairo"],
+                                "/usr/include/cairo",
+                                "/usr/lib/python2.6/site-packages/numpy/core/include"],
                     libraries=['cairo']
                         )
                 ]

@@ -2,42 +2,65 @@
 
 import wx
 from wx.lib.wxcairo import ContextFromDC
+import cairo_tools
+import numpy
+
+def gen_data():
+    x = numpy.linspace(0.1,0.9,20)
+    x0 = x.copy()
+    while True:
+        y = 0.5 + 0.4*numpy.sin(x*20) #+ numpy.random.random(500)*0.01
+        yield x0,y
+        x += 0.003
+        
+def gen_path(s):
+    cr = (yield)
+    cr.new_path()
+    cr.line_to(-s, -s)
+    cr.line_to(-s, s)
+    cr.line_to(s, s)
+    cr.line_to(s, -s)
+    cr.close_path()
+    path = cr.copy_path()
+    cr.new_path()
+    while True:
+        yield path
 
 class GraphicsPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent, -1)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnSize)
+        self.timer = wx.Timer(self, -1)
+        self.Bind(wx.EVT_TIMER, self.OnTimer)
+        
+        self.SetBackgroundColour(wx.NamedColor("white"))
+        
+        self.data = gen_data()
+        self.path = gen_path(0.01)
+        self.path.next()
+        self.timer.Start(100)
+        
+    def OnTimer(self, evt):
+        self.Refresh()
         
     def OnSize(self, evt):
         self.Refresh()
         
     def OnPaint(self, evt):
         dc = wx.PaintDC(self)
-        dc.Clear()
+        #dc.Clear()
         w,h = dc.GetSizeTuple()
-        print w,h
         cr = ContextFromDC(dc)
         cr.scale(w,h)
-        cr.set_source_rgb(0, 0, 0)
-        cr.move_to(0, 0)
-        cr.line_to(1, 1)
-        cr.move_to(1, 0)
-        cr.line_to(0, 1)
-        cr.set_line_width(0.2)
+        cr.set_source_rgb(1, 0, 1)
+        cr.set_line_width(0.002)
+        path = self.path.send(cr)
+        x,y = self.data.next()
+        
+        cairo_tools.polyline(cr,x,y)
+        cairo_tools.stamp_at(cr, path, x, y)
         cr.stroke()
-
-        cr.rectangle(0, 0, 0.5, 0.5)
-        cr.set_source_rgba(1, 0, 0, 0.80)
-        cr.fill()
-
-        cr.rectangle(0, 0.5, 0.5, 0.5)
-        cr.set_source_rgba(0, 1, 0, 0.60)
-        cr.fill()
-
-        cr.rectangle(0.5, 0, 0.5, 0.5)
-        cr.set_source_rgba(0, 0, 1, 0.40)
-        cr.fill()
 
 
 class DisplayFrame(wx.Frame):
