@@ -9,7 +9,11 @@ from Cython.Distutils import build_ext
 #from setuptools import setup
 
 ext_modules = [Extension("cairo_tools", ["cairo_tools.pyx"],
-                    include_dirs=["/usr/include/pycairo"])]
+                    include_dirs=["/usr/include/pycairo",
+                                "/usr/include/cairo"],
+                    libraries=['cairo']
+                        )
+                ]
 
 setup(name='cairo_tools',
       version='0.1.0',
