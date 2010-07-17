@@ -51,13 +51,15 @@ class GraphicsPanel(wx.Panel):
         dc = wx.PaintDC(self)
         #dc.Clear()
         w,h = dc.GetSizeTuple()
+        dc.SetPen(wx.RED_PEN)
         cr = ContextFromDC(dc)
         cr.scale(w,h)
         cr.set_source_rgb(1, 0, 1)
         cr.set_line_width(0.002)
         path = self.path.send(cr)
         x,y = self.data.next()
-        
+    
+        #dc.DrawLines(numpy.array([x*w,y*h]).T)
         cairo_tools.polyline(cr,x,y)
         cairo_tools.stamp_at(cr, path, x, y)
         cr.stroke()
